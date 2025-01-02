@@ -4,6 +4,8 @@
 #include <stdlib.h>
 
 #define MAXC 1024000
+#define MIN_TOTAL_AMOUNT 1000
+#define DISCOUNT_PERCENTAGE 0.05
 
 // Deklarasi fungsi
 void InputMemberCustomer();
@@ -55,12 +57,13 @@ void InputAmountPaymentCustomer(char member[])
 {
     int kupon;
     float totalAmount, priceDiscount, totalPaymentAfterDiscount;
-    double discountPrecentage = 0.05;
     char inputTotal[MAXC];
 
     while (1)
     {
-        fputs("\nMasukkan total pembelian: Rp ", stdout); /* prompt for input */
+        fputs("\nMasukkan total pembelian (min Rp 1000): Rp ", stdout); /* prompt for input */
+
+        fflush(stdin);
 
         if (fgets(inputTotal, MAXC, stdin) == NULL)
         {
@@ -75,7 +78,7 @@ void InputAmountPaymentCustomer(char member[])
         {
             if (isalpha(inputTotal[i]))
             {
-                fputs("\nMohon input total pembelian yang benar. \n", stderr);
+                fputs("\nMohon input total pembelian yang benar (min Rp 1000).\n", stderr);
                 isValid = 0;
                 break;
             }
@@ -87,13 +90,13 @@ void InputAmountPaymentCustomer(char member[])
             char *end;
             totalAmount = strtof(inputTotal, &end);
 
-            if (totalAmount != 0 && totalAmount >= 1000)
+            if (totalAmount != 0 && totalAmount >= MIN_TOTAL_AMOUNT)
             {
                 break;
             }
             else
             {
-                fputs("\nMohon input total pembelian yang benar. \n", stderr);
+                fputs("\nMohon input total pembelian yang benar (min Rp 1000).\n", stderr);
             }
         }
     }
@@ -102,7 +105,7 @@ void InputAmountPaymentCustomer(char member[])
     if (totalAmount >= 100000)
     {
         kupon = (int)(totalAmount / 100000);
-        priceDiscount = totalAmount * discountPrecentage;
+        priceDiscount = totalAmount * DISCOUNT_PERCENTAGE;
         totalPaymentAfterDiscount = totalAmount - priceDiscount;
     }
     else
