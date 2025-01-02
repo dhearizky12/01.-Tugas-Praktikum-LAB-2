@@ -16,6 +16,7 @@ int main()
         printf( "\n| Apakah customer memiliki member ? |" );
         printf( "\n| 1. Ya | ");
         printf( "\n| 2. Tidak |" );
+        printf( "\n| 3. Exit |" );
 
         printf("\n\nPilihan anda : ");
         scanf ( "%d", &choice );
@@ -28,11 +29,12 @@ int main()
         case 2 :
             InputAmountPaymentCustomer("");
             break;
-        
+        case 3 :
+            printf("\nTerima kasih telah menggunakan program ini. Semoga harimu menyenangkan!\n");
         default:
             printf("\nPilihan tidak valid. Silahkan coba lagi. \n");
         }
-    } while ( choice != 2);
+    } while ( choice != 3);
 
     return 0;
 }
