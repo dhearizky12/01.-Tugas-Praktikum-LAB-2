@@ -1,5 +1,9 @@
 // Perhitungan Kupon Diskon
 #include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+
+#define MAXC 1024000
 
 // Deklarasi fungsi
 void InputMemberCustomer();
@@ -52,18 +56,45 @@ void InputAmountPaymentCustomer(char member[])
     int kupon;
     float totalAmount, priceDiscount, totalPaymentAfterDiscount;
     double discountPrecentage = 0.05;
+    char inputTotal[MAXC];
 
     while (1)
     {
-        printf("\nMasukkan total pembelian: Rp ");
-        scanf("%f", &totalAmount);
-        if (totalAmount >= 1000)
+        fputs("\nMasukkan total pembelian: Rp ", stdout); /* prompt for input */
+
+        if (fgets(inputTotal, MAXC, stdin) == NULL)
         {
-            break;
+            puts("(user canceled input)"); /* read entire line */
+            return;                        /* handle manual EOF */
         }
-        else
+
+        /* check char in array to see if it is valid, if so, break loop */
+        int i = 0;
+        int isValid = 1;
+        while (inputTotal[i] != '\n')
         {
-            printf("\nMohon input total pembelian yang benar. \n");
+            if (isalpha(inputTotal[i]))
+            {
+                fputs("\nMohon input total pembelian yang benar. \n", stderr);
+                isValid = 0;
+                break;
+            }
+            i++;
+        }
+
+        if (isValid)
+        {
+            char *end;
+            totalAmount = strtof(inputTotal, &end);
+
+            if (totalAmount != 0 && totalAmount >= 1000)
+            {
+                break;
+            }
+            else
+            {
+                fputs("\nMohon input total pembelian yang benar. \n", stderr);
+            }
         }
     }
 
