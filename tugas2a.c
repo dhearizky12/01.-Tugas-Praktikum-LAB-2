@@ -1,89 +1,98 @@
-//Perhitungan Kupon Diskon
+// Perhitungan Kupon Diskon
 #include <stdio.h>
 
-//Deklarasi fungsi 
+// Deklarasi fungsi
 void InputMemberCustomer();
-void InputAmountPaymentCustomer( char member []);
-void PrintInvoiceCustomer( char member [], float totalAmount, int kupon, float priceDiscount, float totalPaymentAfterDiscount );
+void InputAmountPaymentCustomer(char member[]);
+void PrintInvoiceCustomer(char member[], float totalAmount, int kupon, float priceDiscount, float totalPaymentAfterDiscount);
 
-int main() 
+int main()
 {
     int choice;
-    do {
-        printf( "\n==================================================");
-        printf( "\n| SELAMAT DATANG di SUPERMARKET BINUS KELOMPOK 4 |" );
-        printf( "\n==================================================");
-        printf( "\n| Apakah customer memiliki member ? |" );
-        printf( "\n| 1. Ya | ");
-        printf( "\n| 2. Tidak |" );
-        printf( "\n| 3. Exit |" );
+    do
+    {
+        printf("\n==================================================");
+        printf("\n| SELAMAT DATANG di SUPERMARKET BINUS KELOMPOK 4 |");
+        printf("\n==================================================");
+        printf("\n| Apakah customer memiliki member ? |");
+        printf("\n| 1. Ya | ");
+        printf("\n| 2. Tidak |");
 
         printf("\n\nPilihan anda : ");
-        scanf ( "%d", &choice );
+        scanf("%d", &choice);
 
         switch (choice)
         {
-        case 1 :
+        case 1:
             InputMemberCustomer();
             break;
-        case 2 :
+        case 2:
             InputAmountPaymentCustomer("");
             break;
-        case 3 :
-            printf("\nTerima kasih telah menggunakan program ini. Semoga harimu menyenangkan!\n");
+
         default:
             printf("\nPilihan tidak valid. Silahkan coba lagi. \n");
         }
-    } while ( choice != 3);
+    } while (choice != 2);
 
     return 0;
 }
 
 void InputMemberCustomer()
 {
-    char member[10] = "" ;
-     //Input member 
-    printf( "Masukkan ID member :" );
-    scanf ( "%s", member );
-    InputAmountPaymentCustomer( member );
+    char member[10] = "";
+    // Input member
+    printf("Masukkan ID member :");
+    scanf("%s", member);
+    InputAmountPaymentCustomer(member);
 }
 
-void InputAmountPaymentCustomer( char member [] )
+void InputAmountPaymentCustomer(char member[])
 {
     int kupon;
     float totalAmount, priceDiscount, totalPaymentAfterDiscount;
     double discountPrecentage = 0.05;
-    // Input total pembelian
-    printf("Masukkan total pembelian: Rp ");
-    scanf("%f", &totalAmount);
+
+    while (1)
+    {
+        printf("\nMasukkan total pembelian: Rp ");
+        scanf("%f", &totalAmount);
+        if (totalAmount >= 1000)
+        {
+            break;
+        }
+        else
+        {
+            printf("\nMohon input total pembelian yang benar. \n");
+        }
+    }
 
     // Hitung kupon undian
-    if (totalAmount >= 100000) 
+    if (totalAmount >= 100000)
     {
         kupon = (int)(totalAmount / 100000);
         priceDiscount = totalAmount * discountPrecentage;
         totalPaymentAfterDiscount = totalAmount - priceDiscount;
-    } 
-    else 
+    }
+    else
     {
         kupon = 0;
         priceDiscount = 0;
         totalPaymentAfterDiscount = totalAmount;
     }
 
-    PrintInvoiceCustomer( member, totalAmount, kupon, priceDiscount, totalPaymentAfterDiscount );
+    PrintInvoiceCustomer(member, totalAmount, kupon, priceDiscount, totalPaymentAfterDiscount);
 }
 
-
-void PrintInvoiceCustomer( char member [], float totalAmount, int kupon, float priceDiscount, float totalPaymentAfterDiscount )
+void PrintInvoiceCustomer(char member[], float totalAmount, int kupon, float priceDiscount, float totalPaymentAfterDiscount)
 {
-    // Output hasil 
-    printf( "\n|================================================|" );
-    printf( "\n| +++++++++++++++++ | INVOICE| ++++++++++++++++++|" );
-    printf( "\n|================================================|" );
-    printf( "\nMember : %s" , member );
-    printf( "\nTotal Pembelian: Rp %.2f\n", totalAmount );
-    printf( "Jumlah Kupon: %d\n", kupon );
-    printf( "Diskon: Rp %.2f\n", priceDiscount );
-    printf( "Total yang harus dibayar: Rp %.2f\n", totalPaymentAfterDiscount );
+    // Output hasil
+    printf("\n|================================================|");
+    printf("\n| +++++++++++++++++ | INVOICE| ++++++++++++++++++|");
+    printf("\n|================================================|");
+    printf("\nMember : %s", member);
+    printf("\nTotal Pembelian: Rp %.2f\n", totalAmount);
+    printf("Jumlah Kupon: %d\n", kupon);
+    printf("Diskon: Rp %.2f\n", priceDiscount);
+    printf("Total yang harus dibayar: Rp %.2f\n", totalPaymentAfterDiscount);
 }
