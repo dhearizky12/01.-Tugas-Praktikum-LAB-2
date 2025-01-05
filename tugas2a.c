@@ -3,6 +3,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+/* Penggunaan makro (#define) membantu membuat kode lebih mudah dibaca dan dipelihara. 
+   Jika perlu mengubah nilai seperti batas maksimum atau persentase diskon, 
+   hal ini hanya perlu mengubahnya di satu tempat, dan perubahan tersebut akan diterapkan ke seluruh program */
+
 #define MAXC 1024000
 #define MIN_TOTAL_AMOUNT 1000
 #define DISCOUNT_PERCENTAGE 0.05
@@ -11,6 +15,9 @@
 void InputMemberCustomer();
 void InputAmountPaymentCustomer(char member[]);
 void PrintInvoiceCustomer(char member[], float totalAmount, int kupon, float priceDiscount, float totalPaymentAfterDiscount);
+
+/* kode program ini meminta pengguna untuk menentukan apakah mereka memiliki keanggotaan di supermarket 
+dan kemudian memanggil fungsi yang sesuai berdasarkan pilihan mereka */
 
 int main()
 {
@@ -44,6 +51,8 @@ int main()
     return 0;
 }
 
+/* kode ini mengelola input ID member dan meneruskannya ke fungsi berikutnya untuk pemrosesan lebih lanjut */
+
 void InputMemberCustomer()
 {
     char member[10] = "";
@@ -52,6 +61,9 @@ void InputMemberCustomer()
     scanf("%s", member);
     InputAmountPaymentCustomer(member);
 }
+
+/* kode ini memastikan bahwa pengguna memasukkan jumlah pembelian yang valid (menerima dan memvalidasi input total pembelian dari pengguna) 
+sebelum melanjutkan ke langkah berikutnya dalam proses pembayaran. */
 
 void InputAmountPaymentCustomer(char member[])
 {
@@ -101,7 +113,9 @@ void InputAmountPaymentCustomer(char member[])
         }
     }
 
-    // Hitung kupon undian
+    /* Kode ini menangani logika untuk menentukan apakah pelanggan berhak mendapatkan diskon berdasarkan jumlah total pembelian mereka, 
+       menghitung diskon yang berlaku, dan mempersiapkan informasi yang diperlukan untuk mencetak faktur.*/
+    
     if (totalAmount >= 100000)
     {
         kupon = (int)(totalAmount / 100000);
@@ -117,6 +131,9 @@ void InputAmountPaymentCustomer(char member[])
 
     PrintInvoiceCustomer(member, totalAmount, kupon, priceDiscount, totalPaymentAfterDiscount);
 }
+
+/* kode ini menyusun dan mencetak faktur yang jelas dan terstruktur untuk pelanggan, menampilkan informasi penting seperti ID member, 
+   total pembelian, jumlah kupon, diskon, dan total yang harus dibayar. */
 
 void PrintInvoiceCustomer(char member[], float totalAmount, int kupon, float priceDiscount, float totalPaymentAfterDiscount)
 {
