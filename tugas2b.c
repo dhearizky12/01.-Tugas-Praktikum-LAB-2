@@ -54,13 +54,13 @@ void InputDetailPegawai( Pegawai *pegawai )
     printf("Masukkan NIP: ");
     scanf("%s", pegawai->nip);
     printf("Masukkan Nama: ");
-    scanf(" %[^]s", pegawai->nama);  // Untuk membaca string dengan spasi
+    scanf(" %[^\n]s", pegawai->nama);  // Untuk membaca string dengan spasi
     printf("Masukkan Alamat: ");
-    scanf(" %[^]s", pegawai->alamat); // Untuk membaca string dengan spasi
+    scanf(" %[^\n]s", pegawai->alamat); // Untuk membaca string dengan spasi
     printf("Masukkan No HP: ");
     scanf("%s", pegawai->noHp);
     printf("Masukkan Jabatan: ");
-    scanf(" %[^]s", pegawai->jabatan);
+    scanf(" %[^\n]s", pegawai->jabatan);
     printf("Masukkan Golongan (D1/D2/D3): ");
     scanf("%s", pegawai->golongan);
 }
