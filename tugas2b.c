@@ -61,8 +61,20 @@ void InputDetailPegawai( Pegawai *pegawai )
     scanf("%s", pegawai->noHp);
     printf("Masukkan Jabatan: ");
     scanf(" %[^\n]s", pegawai->jabatan);
-    printf("Masukkan Golongan (D1/D2/D3): ");
-    scanf("%s", pegawai->golongan);
+
+    // Validasi input golongan menggunakan do-while  
+    do {  
+        printf("Masukkan Golongan (D1/D2/D3): ");  
+        scanf("%2s", pegawai->golongan); // Batasi input menjadi 2 karakter untuk mencegah buffer overflow  
+  
+        // Membersihkan buffer input jika ada karakter tambahan  
+        while (getchar() != '\n');  
+  
+        // Periksa apakah input valid  
+        if (strcmp(pegawai->golongan, "D1") != 0 && strcmp(pegawai->golongan, "D2") != 0 && strcmp(pegawai->golongan, "D3") != 0) {  
+            printf("Input tidak valid. Silakan coba lagi.\n");  
+        }  
+    } while (strcmp(pegawai->golongan, "D1") != 0 && strcmp(pegawai->golongan, "D2") != 0 && strcmp(pegawai->golongan, "D3") != 0);
 }
 
 void CalculateGajiPokokPegawai( Pegawai *pegawai )
