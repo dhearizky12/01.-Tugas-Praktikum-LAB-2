@@ -23,6 +23,8 @@ void CalculateGajiPokokPegawai( Pegawai *pegawai );
 float HitungGajiLembur(Pegawai *pegawai, float jamLembur);
 void PrintDataPegawai(Pegawai *pegawai);
 void ProsesHitungLembur(Pegawai *pegawai);
+void getValidGolongan( Pegawai * pegawai ); 
+void getValidHour ( float * jamLemburPegawai );
 
 int main() 
 {
@@ -48,6 +50,23 @@ int main()
     return 0;
 }
 
+void getValidGolongan( Pegawai * pegawai )
+{
+     // Validasi input golongan menggunakan do-while  
+    do {  
+        printf("Masukkan Golongan (D1/D2/D3): ");  
+        scanf("%2s", pegawai->golongan); // Batasi input menjadi 2 karakter untuk mencegah buffer overflow  
+
+        // Membersihkan buffer input jika ada karakter tambahan  
+        // while (getchar() != '\n');  
+        // Periksa apakah input valid  
+        if (strcasecmp(pegawai->golongan, "D1") != 0 && strcasecmp(pegawai->golongan, "D2") != 0 && strcasecmp(pegawai->golongan, "D3") != 0) 
+        {  
+            printf("\nInput tidak valid. Silakan coba lagi.\n");  
+        }  
+    } while (strcasecmp(pegawai->golongan, "D1") != 0 && strcasecmp(pegawai->golongan, "D2") != 0 && strcasecmp(pegawai->golongan, "D3") != 0);
+}
+
 void InputDetailPegawai( Pegawai *pegawai )
 {
     // Input data pegawai
@@ -61,8 +80,7 @@ void InputDetailPegawai( Pegawai *pegawai )
     scanf("%s", pegawai->noHp);
     printf("Masukkan Jabatan: ");
     scanf(" %[^\n]s", pegawai->jabatan);
-    printf("Masukkan Golongan (D1/D2/D3): ");
-    scanf("%s", pegawai->golongan);
+    getValidGolongan( pegawai );
 }
 
 void CalculateGajiPokokPegawai( Pegawai *pegawai )
@@ -119,8 +137,7 @@ void ProsesHitungLembur(Pegawai *pegawai)
     float jamLemburPegawai, totalGaji;
 
     // Input jam lembur
-    printf("\nMasukkan jumlah jam lembur: ");
-    scanf("%f", &jamLemburPegawai);
+    getValidHour ( &jamLemburPegawai );
 
     // Hitung total gaji dengan lembur
     totalGaji = pegawai->gajiPokok + HitungGajiLembur(pegawai, jamLemburPegawai);
@@ -130,4 +147,18 @@ void ProsesHitungLembur(Pegawai *pegawai)
     printf("Golongan: %s\n", pegawai->golongan);
     printf("Lembur: %.2f jam\n", jamLemburPegawai);
     printf("Total Gaji Bulan ini: Rp %.2f\n", totalGaji);
+}
+
+void getValidHour ( float * jamLemburPegawai )
+{
+    // Validasi input jam lembur menggunakan do-while
+    do {
+        printf("Masukkan Jam Lembur: ");
+        scanf("%f", jamLemburPegawai);
+
+        // Periksa apakah input valid
+        if (*jamLemburPegawai < 0) {
+            printf("Input tidak valid. Silakan coba lagi.\n");
+        }
+    } while (*jamLemburPegawai < 0);
 }
