@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdlib.h> // Melakukan impor standar library C yg berisi fungsi untuk konversi tipe data.
 
 //membuat struct pegawai untuk mengelompokkan struktur variable/atribut pegawai
 typedef struct 
@@ -149,16 +151,38 @@ void ProsesHitungLembur(Pegawai *pegawai)
     printf("Total Gaji Bulan ini: Rp %.2f\n", totalGaji);
 }
 
-void getValidHour ( float * jamLemburPegawai )
+void getValidHour(float *jamLemburPegawai)
 {
-    // Validasi input jam lembur menggunakan do-while
+    char input[10];
+    int valid;
     do {
+        valid = 1;
         printf("Masukkan Jam Lembur: ");
-        scanf("%f", jamLemburPegawai);
+        scanf("%s", input);
 
-        // Periksa apakah input valid
-        if (*jamLemburPegawai < 0) {
+        // Periksa apakah input valid (hanya angka)
+        for (int i = 0; input[i] != '\0'; i++) 
+        {
+            if (!isdigit(input[i]) && input[i] != '.') 
+            {
+                valid = 0;
+                break;
+            }
+        }
+
+        if (valid) {
+            *jamLemburPegawai = atof(input); // mengubah string menjadi float
+            if (*jamLemburPegawai < 0) 
+            {
+                printf("Input tidak valid. Silakan coba lagi.\n");
+                valid = 0;
+            }
+        } else 
+        {
             printf("Input tidak valid. Silakan coba lagi.\n");
         }
-    } while (*jamLemburPegawai < 0);
+
+        // Membersihkan buffer input
+        while (getchar() != '\n');
+    } while (!valid);
 }
