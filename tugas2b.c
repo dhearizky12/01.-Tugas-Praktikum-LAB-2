@@ -26,10 +26,12 @@ float HitungGajiLembur(Pegawai *pegawai, float jamLembur);
 void PrintDataPegawai(Pegawai *pegawai);
 void ProsesHitungLembur(Pegawai *pegawai);
 void getValidGolongan( Pegawai * pegawai ); 
+void getValidPhoneNumber( Pegawai * pegawai );
 void getValidHour ( float * jamLemburPegawai );
 
 int main() 
 {
+    char pilihan;
     Pegawai pegawai; // deklarasi variable pegawai dengan tipe data Pegawai
     /*
         function - function di bawah ini di beri parameter referensi ke objek Pegawai 
@@ -37,19 +39,47 @@ int main()
         Dengan menggunakan pointer (*pegawai), fungsi ini dapat langsung memodifikasi data 
         dalam memori, sehingga nilai-nilai yang diinput akan disimpan langsung pada variabel pegawai yang diberikan.
     */
-    //input detail pegawai
-    InputDetailPegawai( &pegawai );
 
-    //hitung gaji pokok berdasarkan golongan
-    CalculateGajiPokokPegawai( &pegawai );
+    do {
+        //input detail pegawai
+        InputDetailPegawai( &pegawai );
 
-    //cetak data pegawai
-    PrintDataPegawai(&pegawai);
+        //hitung gaji pokok berdasarkan golongan
+        CalculateGajiPokokPegawai( &pegawai );
 
-    //proses perhitungan lembur
-    ProsesHitungLembur(&pegawai);
+        //cetak data pegawai
+        PrintDataPegawai(&pegawai);
+
+        //proses perhitungan lembur
+        ProsesHitungLembur(&pegawai);
+
+        // Tanyakan kepada pengguna apakah ingin menginput data lagi
+        printf("\nApakah Anda ingin menginput data lagi? (y/n): ");
+        scanf("\n %c", &pilihan);
+    } while (pilihan == 'y' || pilihan == 'Y');
 
     return 0;
+}
+
+void getValidPhoneNumber( Pegawai * pegawai )
+{
+    int valid;
+    do {
+        valid = 1;
+        printf("Masukkan No HP: ");
+        scanf("%s", pegawai->noHp);
+
+        // Periksa apakah input valid (hanya angka)
+        for (int i = 0; pegawai->noHp[i] != '\0'; i++) 
+        {
+            if (!isdigit(pegawai->noHp[i])) 
+            {
+                valid = 0;
+                printf("Input tidak valid. Silakan masukkan nomor HP yang benar.\n");
+                break;
+            }
+        }
+    } while (!valid);
 }
 
 void getValidGolongan( Pegawai * pegawai )
@@ -62,24 +92,25 @@ void getValidGolongan( Pegawai * pegawai )
         // Membersihkan buffer input jika ada karakter tambahan  
         // while (getchar() != '\n');  
         // Periksa apakah input valid  
-        if (strcasecmp(pegawai->golongan, "D1") != 0 && strcasecmp(pegawai->golongan, "D2") != 0 && strcasecmp(pegawai->golongan, "D3") != 0) 
+        if (strcmp(pegawai->golongan, "D1") != 0 && strcmp(pegawai->golongan, "D2") != 0 && strcmp(pegawai->golongan, "D3") != 0) 
         {  
             printf("\nInput tidak valid. Silakan coba lagi.\n");  
         }  
-    } while (strcasecmp(pegawai->golongan, "D1") != 0 && strcasecmp(pegawai->golongan, "D2") != 0 && strcasecmp(pegawai->golongan, "D3") != 0);
+    } while (strcmp(pegawai->golongan, "D1") != 0 && strcmp(pegawai->golongan, "D2") != 0 && strcmp(pegawai->golongan, "D3") != 0);
 }
 
 void InputDetailPegawai( Pegawai *pegawai )
 {
     // Input data pegawai
-    printf("Masukkan NIP: ");
+    printf("\nMasukkan NIP: ");
     scanf("%s", pegawai->nip);
     printf("Masukkan Nama: ");
     scanf(" %[^\n]s", pegawai->nama);  // Untuk membaca string dengan spasi
     printf("Masukkan Alamat: ");
     scanf(" %[^\n]s", pegawai->alamat); // Untuk membaca string dengan spasi
-    printf("Masukkan No HP: ");
-    scanf("%s", pegawai->noHp);
+    // Validasi input nomor HP
+    getValidPhoneNumber( pegawai );
+
     printf("Masukkan Jabatan: ");
     scanf(" %[^\n]s", pegawai->jabatan);
     getValidGolongan( pegawai );
@@ -124,6 +155,7 @@ float HitungGajiLembur(Pegawai *pegawai, float jamLembur)
 
 void PrintDataPegawai(Pegawai *pegawai)
 {
+    printf("\n============== Detail Data Pegawai =============\n");
     printf("\nData Pegawai:\n");
     printf("NIP: %s\n", pegawai->nip);
     printf("Nama: %s\n", pegawai->nama);
@@ -132,6 +164,7 @@ void PrintDataPegawai(Pegawai *pegawai)
     printf("Jabatan: %s\n", pegawai->jabatan);
     printf("Golongan: %s\n", pegawai->golongan);
     printf("Gaji Pokok: Rp %d\n", pegawai->gajiPokok);
+    printf("\n==================================================\n");
 }
 
 void ProsesHitungLembur(Pegawai *pegawai)
@@ -145,10 +178,12 @@ void ProsesHitungLembur(Pegawai *pegawai)
     totalGaji = pegawai->gajiPokok + HitungGajiLembur(pegawai, jamLemburPegawai);
 
     // Output hasil
+    printf("\n============== Detail Gaji Pegawai =============\n");
     printf("\nNIP: %s\n", pegawai->nip);
     printf("Golongan: %s\n", pegawai->golongan);
     printf("Lembur: %.2f jam\n", jamLemburPegawai);
     printf("Total Gaji Bulan ini: Rp %.2f\n", totalGaji);
+    printf("\n==================================================\n");
 }
 
 void getValidHour(float *jamLemburPegawai)
@@ -157,8 +192,10 @@ void getValidHour(float *jamLemburPegawai)
     int valid;
     do {
         valid = 1;
+        printf("\n---- Detail Data Lembur ----\n");
         printf("Masukkan Jam Lembur: ");
         scanf("%s", input);
+        printf ("----------------------------\n");
 
         // Periksa apakah input valid (hanya angka)
         for (int i = 0; input[i] != '\0'; i++) 
