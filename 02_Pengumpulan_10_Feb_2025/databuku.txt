@@ -1,0 +1,5 @@
+bookCode,bookName,bookType,bookPrice
+
+20250201_234549,Sapiens,History,129000
+20250201_234622,Atomic Habits,Self improvemnet,100000
+20250201_234756,Wabi Sabi,motivation,99000
