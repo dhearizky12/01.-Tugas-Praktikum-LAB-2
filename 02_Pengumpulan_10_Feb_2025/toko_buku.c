@@ -149,6 +149,22 @@ int insertBook(const char *filename, Book *book)
     return 0;
 }
 
+
+// Fungsi untuk menampilkan data buku
+// koreksi jika ada kurang
+void viewBooks() {
+    if (bookCount == 0) {
+        printf("No books available.\n");
+        return;
+    }
+
+    printf("Book List:\n");
+    for (int i = 0; i < bookCount; i++) {
+        printf("Code: %s, Name: %s, Type: %s, Price: %.2f\n", bookList[i].code, bookList[i].name, bookList[i].type, bookList[i].price);
+    }
+}
+
+
 int main(int argc, char const *argv[])
 {
     const char *fileName = "./databuku.txt";
