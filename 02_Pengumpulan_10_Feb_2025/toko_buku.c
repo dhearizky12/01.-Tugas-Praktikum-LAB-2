@@ -4,6 +4,8 @@
 #include <time.h>
 
 #define MAXC 100
+#define TYPE 10
+#define DATE 30
 
 typedef struct
 {
@@ -11,6 +13,15 @@ typedef struct
     char bookName[MAXC];
     char bookType[MAXC];
     unsigned int price; // price should not be minus.
+    char createdTime[DATE];
+    char recordType[TYPE]; // Store data type: "buku" or "penjualan"    
+    union{
+        struct{
+            char buyer[MAXC];
+            char saleDate[DATE];
+        }dataPenjualan;
+    } additionalData; //berisi data misal data buku, data penjualan
+    int isDeleted; //flag untuk menandai apakah entri terhapus
 } Book;
 
 void createTXTIfNotExists(const char *filename)
@@ -24,12 +35,10 @@ void createTXTIfNotExists(const char *filename)
             -> fopen is a way for allocated memory for file.
             why we need to allocate memory for file?
             -> because we need to store the file that we open. And store the file in the memory.
-            -> if the file didnt open, it will return NULL.
+            -> if the file didn't open, it will return NULL.
             why we dont user malloc and free for file?
             -> because fopen is a standard library, and it will automatically allocate and deallocate the memory.
             -> and its more efficient to use fopen and fclose instead of malloc and free.
-            why its more efficient?
-            -> because fopen and fclose is a standard library, and it will automatically allocate and deallocate the memory.
             chatgpt, 19/01
         */
         file = fopen(filename, "w");
@@ -38,8 +47,9 @@ void createTXTIfNotExists(const char *filename)
             fprintf(stderr, "Error creating file.\n");
             exit(1);
         }
-        fprintf(file, "bookCode,bookName,bookType,bookPrice\n"); // menulis ke file
-        fclose(file);                                            // untuk menutup file( membersihkan memory)
+        //menulis header untuk file.
+        fprintf(file, "bookCode,bookName,bookType,bookPrice,createdTime,recordType,buyer,saleDate,isDeleted\n"); // menulis ke file
+        fclose(file);  //untuk menutup file (membersihkan memori)                                         // untuk menutup file( membersihkan memory)
     }
     else
     {
@@ -49,7 +59,7 @@ void createTXTIfNotExists(const char *filename)
 
 void createBookCode(Book *book)
 {
-    // FEEL FREE TO CHANGE THE AGORITHM TO CREATE A UNIQUE BOOK NUM
+    //Algorithm for creating unique book code
     time_t currentTime = time(NULL);
     struct tm tm = *localtime(&currentTime);
     int todayYear = tm.tm_year + 1900;
@@ -61,6 +71,16 @@ void createBookCode(Book *book)
     sprintf(book->bookCode, "%04d%02d%02d_%02d%02d%02d", todayYear, currentMonth, currentDay, currentHour, currentMinute, currentSec);
 }
 
+void createdTime(Book *book)
+{
+    //set createdTime to current time source : https://stackoverflow.com/questions/12784903/timenull-returning-different-time
+    time_t currentTime = time(NULL); // holds a value representing the number of seconds since the UNIX epoch
+    //Epoch was 1.1.1970, 00:00:00 in Greenwich, UK. So in fact time() does not return a time, but a time difference.
+    struct tm *tm = localtime(&currentTime); //localtime untuk mendapatkan waktu lokal, bisakah kita ganti tm ke tipe bukan struct ?
+
+    strftime(book->createdTime, sizeof(book->createdTime), "%Y-%m-%d %H:%M:%S", tm); //strftime untuk mengubah waktu ke dalam string
+}
+
 int insertBook(const char *filename, Book *book)
 {
     FILE *file = fopen(filename, "a");
@@ -70,7 +90,7 @@ int insertBook(const char *filename, Book *book)
         return 1;
     }
 
-    printf("Insert book name: \n");
+    printf("Insert book name: ");
     // GFG, https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/, 19/01
     // TAKING SPACE BETWEEN NAME AS INPUT using fgets
     if (fgets(book->bookName, sizeof(book->bookName), stdin) == NULL)
@@ -79,10 +99,10 @@ int insertBook(const char *filename, Book *book)
         return 1;
     }
 
-    printf("Insert book type: \n");
+    printf("Insert book type: ");
     if (fgets(book->bookType, sizeof(book->bookType), stdin) == NULL)
     {
-        fprintf(stderr, "Error reading book name.\n");
+        fprintf(stderr, "Error reading book type.\n");
         return 1;
     }
 
@@ -105,7 +125,7 @@ int insertBook(const char *filename, Book *book)
     while (1)
     {
         int price = 0;
-        fputs("Insert book price: \n", stdout);
+        fputs("Insert book price (Please use numeric value in IDR): ", stdout);
         fflush(stdin);
 
         if (fgets(priceInput, MAXC, stdin) == NULL)
@@ -141,33 +161,64 @@ int insertBook(const char *filename, Book *book)
         }
     }
 
+    //set record type to "buku"
+    strcpy(book->recordType, "buku"); //strcpy untuk mengcopy string "buku" ke dalam recordType
+
+    //set isDeleted to 0 (not deleted)
+    book->isDeleted = 0;
+
+    //autogenerate book code
     createBookCode(book);
 
-    fprintf(file, "%s,%s,%s,%d\n", book->bookCode, book->bookName, book->bookType, book->price);
+    //auto set created time data
+    createdTime(book);
+
+    fprintf(file, "%s,%s,%s,%d,%s,%s,,,%d\n", book->bookCode, book->bookName, book->bookType, book->price, book->createdTime, book->recordType, book->isDeleted);
     fclose(file);
 
     return 0;
 }
 
-int main(int argc, char const *argv[])
+void setConsoleFontColor(int colour)
 {
-    const char *fileName = "./databuku.txt";
+    // escape ANSI https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+    //\033 adalah escape sequence yang mewakili karakter ESC (Escape) dalam ASCII.
+    //38 kode untuk warna teks
+    // ;5  => kode untuk warna teks 256 palet warna
+    // m : perintah yang mengatur atribut grafis (SGR - Select Graphic Rendition).
+    printf("\033[38;5;%dm", colour);
+}
+
+void resetConsoleFontColor()
+{
+    printf("\033[0m");
+}
+
+int main()
+{
+    const char *fileName = "../databuku.txt";
     createTXTIfNotExists(fileName);
     int choice;
     Book book;
 
+    setConsoleFontColor(106); 
+    printf("\n=========================================================\n");
+    printf("******** Welcome to the BINUS Group 4 Book store ********\n");
     printf("=========================================================\n");
-    printf("Welcome to the BINUS Group 4 Book store\n");
-    printf("=========================================================\n");
+    resetConsoleFontColor();
 
     while (1)
     {
-        printf("1. Insert Book\n");
-        printf("2. View History\n");
-        printf("3. View Book\n");
-        printf("4. Delete History\n");
-        printf("5. Delete Book\n");
-        printf("6. Exit\n");
+        printf("\n=========================================================\n");
+        printf("           ******** Please Select MENU ********      \n");
+        printf("=========================================================\n");
+        printf("1. Insert Book Data. Pada menu ini, user dapat menginput data buku\n");
+        printf("2. View History Penjualan. Pada menu ini akan ditampilkan data history penjualan\n");
+        printf("3. View Book Data. Pada menu ini akan ditampilkan seluruh data buku\n");
+        printf("4. Delete History Penjualan. Pada menu ini akan di tampilkan history penjualan dan user bisa memilih untuk mendelete\n");
+        printf("5. Delete Book. Pada menu ini sistem akan menampilkan data buku untuk di delete\n");
+        printf("6. Insert Data Penjualan. Pada menu ini user dapat menginput data penjualan\n");
+        printf("7. Exit\n");
         printf("Choose an option: ");
         if (scanf("%d", &choice) != 1)
         {
@@ -179,15 +230,16 @@ int main(int argc, char const *argv[])
         // is a common way to clear the input buffer to handle cases where leftover characters
         // remain in the input stream after a scanf, fgets, or similar input functions.
         // CHATGPT, 19/01
-        while (getchar() != '\n' && getchar() != EOF)
-            ;
+        while (getchar() != '\n' && getchar() != EOF);
 
         switch (choice)
         {
         case 1:
             if (insertBook(fileName, &book) == 0)
             {
-                printf("Book inserted successfully.\n");
+                setConsoleFontColor(106);
+                printf(" ------ Book inserted successfully. ------ \n");
+                resetConsoleFontColor();
             }
             break;
         case 2:
@@ -199,9 +251,13 @@ int main(int argc, char const *argv[])
         case 5:
             break;
         case 6:
+            break;
+        case 7:
             exit(0);
         default:
+            setConsoleFontColor(160);
             printf("Invalid choice. Please try again.\n");
+            resetConsoleFontColor();
         }
     }
 
