@@ -6,6 +6,7 @@
 #define MAXC 100
 #define TYPE 10
 #define DATE 30
+#define BUFFER 256
 
 typedef struct
 {
@@ -194,6 +195,36 @@ void resetConsoleFontColor()
     printf("\033[0m");
 }
 
+void displayData(const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    
+    if (file == NULL)
+    {
+        fprintf(stderr, "Error opening file.\n");
+        return;
+    }
+
+    char line[BUFFER];
+    int isEmpty = 1;
+
+    if (fgets(line, sizeof(line), file) != NULL)
+    {
+        printf("%s", line);
+    }
+
+    while (fgets(line, sizeof(line), file)) 
+    {
+        printf("%s", line);
+        isEmpty = 0;
+    }
+
+    if (isEmpty)
+    {
+        printf("No data available.\n");
+    }
+}
+
 int main()
 {
     const char *fileName = "../databuku.txt";
@@ -212,12 +243,36 @@ int main()
         printf("\n=========================================================\n");
         printf("           ******** Please Select MENU ********      \n");
         printf("=========================================================\n");
-        printf("1. Insert Book Data. Pada menu ini, user dapat menginput data buku\n");
-        printf("2. View History Penjualan. Pada menu ini akan ditampilkan data history penjualan\n");
-        printf("3. View Book Data. Pada menu ini akan ditampilkan seluruh data buku\n");
-        printf("4. Delete History Penjualan. Pada menu ini akan di tampilkan history penjualan dan user bisa memilih untuk mendelete\n");
-        printf("5. Delete Book. Pada menu ini sistem akan menampilkan data buku untuk di delete\n");
-        printf("6. Insert Data Penjualan. Pada menu ini user dapat menginput data penjualan\n");
+        printf("1. Insert Book Data.");
+        setConsoleFontColor(154);
+        printf("Pada menu ini, user dapat menginput data buku\n");
+        resetConsoleFontColor();
+        
+        printf("2. View History Penjualan.");
+        setConsoleFontColor(154);
+        printf("Pada menu ini akan ditampilkan data history penjualan\n");
+        resetConsoleFontColor();
+
+        printf("3. View Book Data.");
+        setConsoleFontColor(154);
+        printf("Pada menu ini akan ditampilkan seluruh data buku\n");
+        resetConsoleFontColor();
+        
+        printf("4. Delete History Penjualan.");
+        setConsoleFontColor(154);
+        printf("Pada menu ini akan di tampilkan history penjualan dan user bisa memilih untuk mendelete\n");
+        resetConsoleFontColor();
+
+        printf("5. Delete Book.");
+        setConsoleFontColor(154);
+        printf("Pada menu ini sistem akan menampilkan data buku untuk di delete\n");
+        resetConsoleFontColor();
+
+        printf("6. Insert Data Penjualan.");
+        setConsoleFontColor(154);
+        printf("Pada menu ini user dapat menginput data penjualan\n");
+        resetConsoleFontColor();
+
         printf("7. Exit\n");
         printf("Choose an option: ");
         if (scanf("%d", &choice) != 1)
@@ -245,6 +300,7 @@ int main()
         case 2:
             break;
         case 3:
+            displayData(fileName);
             break;
         case 4:
             break;
