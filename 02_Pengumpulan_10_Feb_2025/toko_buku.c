@@ -3,23 +3,31 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MAXC 100
+#define MAXC 50
 #define TYPE 10
-#define DATE 30
+#define CREATED_TIME 20
 #define BUFFER 256
+
+#define MAX_BOOK_CODE 20
+#define MAX_BOOK_NAME 32
+#define MAX_BOOK_TYPE 15
+#define MAX_BOOK_PRICE 15
+#define MAX_RECORD_TYPE 10
+#define MAX_BUYER 20
+#define MAX_SALE_DATE 20
 
 typedef struct
 {
-    char bookCode[MAXC]; // AUTO GENERATED SINCE IT IS A UNIQUE
-    char bookName[MAXC];
-    char bookType[MAXC];
+    char bookCode[MAX_BOOK_CODE]; // AUTO GENERATED SINCE IT IS A UNIQUE
+    char bookName[MAX_BOOK_NAME];
+    char bookType[MAX_BOOK_TYPE];
     unsigned int price; // price should not be minus.
-    char createdTime[DATE];
+    char createdTime[CREATED_TIME];
     char recordType[TYPE]; // Store data type: "buku" or "penjualan"    
     union{
         struct{
-            char buyer[MAXC];
-            char saleDate[DATE];
+            char buyer[MAX_BUYER];
+            char saleDate[CREATED_TIME];
         }dataPenjualan;
     } additionalData; //berisi data misal data buku, data penjualan
     int isDeleted; //flag untuk menandai apakah entri terhapus
@@ -82,6 +90,22 @@ void createdTime(Book *book)
     strftime(book->createdTime, sizeof(book->createdTime), "%Y-%m-%d %H:%M:%S", tm); //strftime untuk mengubah waktu ke dalam string
 }
 
+// Remove trailing newline from fgets
+void removeTrailingNewLine(char *str)
+{
+    size_t len = strlen(str);
+    if(len > 0 && str[len-1] == '\n')
+    {
+        str[len-1] = '\0';
+    }
+}
+
+void clearInputBuffer() 
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 int insertBook(const char *filename, Book *book)
 {
     FILE *file = fopen(filename, "a");
@@ -91,7 +115,7 @@ int insertBook(const char *filename, Book *book)
         return 1;
     }
 
-    printf("Insert book name: ");
+    printf("Insert book name (max %d characters) : ", MAX_BOOK_NAME);
     // GFG, https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/, 19/01
     // TAKING SPACE BETWEEN NAME AS INPUT using fgets
     if (fgets(book->bookName, sizeof(book->bookName), stdin) == NULL)
@@ -100,26 +124,19 @@ int insertBook(const char *filename, Book *book)
         return 1;
     }
 
-    printf("Insert book type: ");
+    clearInputBuffer();
+
+    printf("Insert book type (max %d characters): ", MAX_BOOK_TYPE );
     if (fgets(book->bookType, sizeof(book->bookType), stdin) == NULL)
     {
         fprintf(stderr, "Error reading book type.\n");
         return 1;
     }
 
-    // Remove trailing newline from book name
-    size_t len = strlen(book->bookName);
-    if (len > 0 && book->bookName[len - 1] == '\n')
-    {
-        book->bookName[len - 1] = '\0';
-    }
+    removeTrailingNewLine(book->bookName);
 
     // Remove trailing newline from book type
-    size_t typeLen = strlen(book->bookType);
-    if (typeLen > 0 && book->bookType[typeLen - 1] == '\n')
-    {
-        book->bookType[typeLen - 1] = '\0';
-    }
+    removeTrailingNewLine(book->bookType);
 
     char priceInput[MAXC];
 
@@ -195,7 +212,7 @@ void resetConsoleFontColor()
     printf("\033[0m");
 }
 
-void displayData(const char *filename)
+void displayData(const char *filename, const char *desiredRecordType)
 {
     FILE *file = fopen(filename, "r");
     
@@ -208,14 +225,46 @@ void displayData(const char *filename)
     char line[BUFFER];
     int isEmpty = 1;
 
+    // Read and display the header
     if (fgets(line, sizeof(line), file) != NULL)
     {
-        printf("%s", line);
+        if ( strcmp(desiredRecordType, "penjualan") == 0 )
+        {
+            printf("%-20s %-35s %-17s %-15s %-20s %-10s %-20s %-20s\n","bookCode","bookName","bookType","bookPrice","createdTime","recordType","buyer","saleDate\n");
+        }
+        else if( strcmp(desiredRecordType, "buku") == 0 )
+        {
+            printf("%-20s %-35s %-17s %-15s %-20s %-10s","bookCode","bookName","bookType","bookPrice","createdTime","recordType\n");
+        }
     }
 
+    //membaca dan memproses setiap baris data
     while (fgets(line, sizeof(line), file)) 
     {
-        printf("%s", line);
+        char *bookCode = strtok(line, ","); //strtok untuk memisahkan string berdasarkan delimiter. parameter line bertujuan untuk memisahkan string line berdasarkan delimiter ","
+        char *bookName = strtok(NULL, ","); // parameter NULL pada strtok bertujuan untuk melanjutkan pemisahan string dari posisi terakhir pemisahan
+        char *bookType = strtok(NULL, ","); // strtok(NULL, ",") berarti melanjutkan pemisahan string dari posisi terakhir pemisahan
+        char *bookPrice = strtok(NULL, ",");
+        char *createdTime = strtok(NULL, ",");
+        char *recordType = strtok(NULL, ",");
+        char *buyer = strtok(NULL, ",");
+        char *saleDate = strtok(NULL, ",");
+        char *isDeleted = strtok(NULL, ",");
+
+        int isDeletedInt = atoi(isDeleted); //atoi untuk mengubah string menjadi integer
+
+        //memeriksa kondisi isDeleted == 0 dan recordType == desiredRecordType
+        //strcmp untuk membandingkan dua string
+        if ( isDeletedInt == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("penjualan", desiredRecordType) == 0 )
+        {
+            printf("%-20s %-35s %-27s %-15s %-20s %-10s %-20s %-20s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
+            isEmpty = 0;
+        }
+        else if ( isDeleted == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("buku", desiredRecordType) == 0)
+        {
+            printf("%-20s %-35s %-17s %-15s %-20s %-10s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType );
+            isEmpty = 0;
+        }
         isEmpty = 0;
     }
 
@@ -223,6 +272,8 @@ void displayData(const char *filename)
     {
         printf("No data available.\n");
     }
+
+    fclose(file);
 }
 
 int main()
@@ -298,9 +349,10 @@ int main()
             }
             break;
         case 2:
+            displayData(fileName, "penjualan");
             break;
         case 3:
-            displayData(fileName);
+            displayData(fileName, "buku");
             break;
         case 4:
             break;
