@@ -306,17 +306,9 @@ int insertSaleBook(const char *filename, Book *book)
 
         int found = 0;
         Book tempBook;
-        FILE *tempFile = fopen("temp.txt", "w"); // w untuk write
-        if (tempFile == NULL)
-        {
-            fprintf(stderr, "Error opening temp file.\n");
-            fclose(file);
-            return 1;
-        }
 
         char line[BUFFER];
         fgets(line, sizeof(line), file); // Copy header to temp
-        fprintf(tempFile, "%s", line);
 
         while (fgets(line, sizeof(line), file))
         {
@@ -329,10 +321,8 @@ int insertSaleBook(const char *filename, Book *book)
                 found = 1;
                 *book = tempBook;
             }
-            // fprintf(tempFile, "%s", line); // untuk menulis ke file
         }
         fclose(file);
-        fclose(tempFile);
 
         if (!found)
         {
