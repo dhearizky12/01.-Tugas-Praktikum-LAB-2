@@ -7,3 +7,4 @@ bookCode,bookName,bookType,bookPrice,createdTime,recordType,buyer,saleDate,isDel
 20250206_190816,Naruto,Komedi,25000,2025-02-06 19:08:16,buku,,,0
 20250206_183702,Harry Potter,Fantasi,356000,2025-02-06 18:37:02,penjualan,Cv.Bintang Sentosa,2025-02-06 19:31:29,0
 20250206_183702,Harry Potter,Fantasi,356000,2025-02-06 18:37:02,penjualan,PT sejahtera,2025-02-06 19:53:57,0
+20250206_190816,Naruto,Komedi,25000,2025-02-06 19:08:16,penjualan,Dhea,2025-02-06 20:01:30,0
