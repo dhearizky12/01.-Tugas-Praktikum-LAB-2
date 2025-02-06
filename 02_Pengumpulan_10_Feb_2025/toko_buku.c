@@ -10,8 +10,8 @@
 
 #define MAX_BOOK_CODE 20
 #define MAX_BOOK_NAME 32
-#define MAX_BOOK_TYPE 15
-#define MAX_BOOK_PRICE 15
+#define MAX_BOOK_TYPE 10
+#define MAX_BOOK_PRICE 10
 #define MAX_RECORD_TYPE 10
 #define MAX_BUYER 20
 #define MAX_SALE_DATE 20
@@ -80,14 +80,21 @@ void createBookCode(Book *book)
     sprintf(book->bookCode, "%04d%02d%02d_%02d%02d%02d", todayYear, currentMonth, currentDay, currentHour, currentMinute, currentSec);
 }
 
-void createdTime(Book *book)
+void createdTime(Book *book, const char *desiredRecordType)
 {
     //set createdTime to current time source : https://stackoverflow.com/questions/12784903/timenull-returning-different-time
     time_t currentTime = time(NULL); // holds a value representing the number of seconds since the UNIX epoch
     //Epoch was 1.1.1970, 00:00:00 in Greenwich, UK. So in fact time() does not return a time, but a time difference.
     struct tm *tm = localtime(&currentTime); //localtime untuk mendapatkan waktu lokal, bisakah kita ganti tm ke tipe bukan struct ?
 
-    strftime(book->createdTime, sizeof(book->createdTime), "%Y-%m-%d %H:%M:%S", tm); //strftime untuk mengubah waktu ke dalam string
+    if ( strcmp(desiredRecordType, "buku") == 0 )
+    {
+        strftime(book->createdTime, sizeof(book->createdTime), "%Y-%m-%d %H:%M:%S", tm); //strftime untuk mengubah waktu ke dalam string
+    }
+    else if ( strcmp (desiredRecordType, "penjualan") == 0 )
+    {
+        strftime(book->additionalData.dataPenjualan.saleDate, sizeof(book->additionalData.dataPenjualan.saleDate), "%Y-%m-%d %H:%M:%S", tm); //strftime untuk mengubah waktu ke dalam string    
+    }
 }
 
 // Remove trailing newline from fgets
@@ -116,6 +123,7 @@ int insertBook(const char *filename, Book *book)
     }
 
     printf("Insert book name (max %d characters) : ", MAX_BOOK_NAME);
+    fflush(stdin); // untuk membersihkan buffer input
     // GFG, https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/, 19/01
     // TAKING SPACE BETWEEN NAME AS INPUT using fgets
     if (fgets(book->bookName, sizeof(book->bookName), stdin) == NULL)
@@ -124,16 +132,15 @@ int insertBook(const char *filename, Book *book)
         return 1;
     }
 
-    clearInputBuffer();
+    removeTrailingNewLine(book->bookName);
 
     printf("Insert book type (max %d characters): ", MAX_BOOK_TYPE );
+    fflush(stdin);
     if (fgets(book->bookType, sizeof(book->bookType), stdin) == NULL)
     {
         fprintf(stderr, "Error reading book type.\n");
         return 1;
     }
-
-    removeTrailingNewLine(book->bookName);
 
     // Remove trailing newline from book type
     removeTrailingNewLine(book->bookType);
@@ -189,7 +196,7 @@ int insertBook(const char *filename, Book *book)
     createBookCode(book);
 
     //auto set created time data
-    createdTime(book);
+    createdTime(book, "buku");
 
     fprintf(file, "%s,%s,%s,%d,%s,%s,,,%d\n", book->bookCode, book->bookName, book->bookType, book->price, book->createdTime, book->recordType, book->isDeleted);
     fclose(file);
@@ -230,11 +237,11 @@ void displayData(const char *filename, const char *desiredRecordType)
     {
         if ( strcmp(desiredRecordType, "penjualan") == 0 )
         {
-            printf("%-20s %-35s %-17s %-15s %-20s %-10s %-20s %-20s\n","bookCode","bookName","bookType","bookPrice","createdTime","recordType","buyer","saleDate\n");
+            printf("%-20s %-35s %-13s %-11s %-20s %-10s %-20s %-20s\n","bookCode","bookName","bookType","bookPrice","createdTime","recordType","buyer","saleDate\n");
         }
         else if( strcmp(desiredRecordType, "buku") == 0 )
         {
-            printf("%-20s %-35s %-17s %-15s %-20s %-10s","bookCode","bookName","bookType","bookPrice","createdTime","recordType\n");
+            printf("%-20s %-35s %-13s %-11s %-20s %-10s","bookCode","bookName","bookType","bookPrice","createdTime","recordType\n");
         }
     }
 
@@ -257,23 +264,109 @@ void displayData(const char *filename, const char *desiredRecordType)
         //strcmp untuk membandingkan dua string
         if ( isDeletedInt == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("penjualan", desiredRecordType) == 0 )
         {
-            printf("%-20s %-35s %-27s %-15s %-20s %-10s %-20s %-20s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
+            printf("%-20s %-35s %-13s %-11s %-20s %-10s %-20s %-20s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
             isEmpty = 0;
         }
         else if ( isDeleted == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("buku", desiredRecordType) == 0)
         {
-            printf("%-20s %-35s %-17s %-15s %-20s %-10s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType );
+            printf("%-20s %-35s %-13s %-11s %-20s %-10s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType );
             isEmpty = 0;
         }
-        isEmpty = 0;
     }
 
     if (isEmpty)
     {
-        printf("No data available.\n");
+        setConsoleFontColor(160);
+        printf(" ------------------------------------------ No data available. ----------------------------------------------\n");
+        resetConsoleFontColor();
     }
 
     fclose(file);
+}
+
+int insertSaleBook(const char *filename, Book *book)
+{
+    FILE *file;
+    // Menampilkan daftar buku
+    displayData(filename, "buku");
+    while (1)
+    {
+        file = fopen(filename, "r");
+        if (file == NULL)
+        {
+            fprintf(stderr, "Error opening file.\n");
+            return 1;
+        }
+
+        // Meminta kode buku dari user
+        char selectedBookCode[MAX_BOOK_CODE];
+        printf("Masukkan kode buku yang akan dijual: ");
+        fgets(selectedBookCode, sizeof(selectedBookCode), stdin);
+        removeTrailingNewLine(selectedBookCode);
+
+        int found = 0;
+        Book tempBook;
+        FILE *tempFile = fopen("temp.txt", "w"); // w untuk write
+        if (tempFile == NULL)
+        {
+            fprintf(stderr, "Error opening temp file.\n");
+            fclose(file);
+            return 1;
+        }
+
+        char line[BUFFER];
+        fgets(line, sizeof(line), file); // Copy header to temp
+        fprintf(tempFile, "%s", line);
+
+        while (fgets(line, sizeof(line), file))
+        {
+            sscanf(line, "%[^,],%[^,],%[^,],%u,%[^,],%[^,],,,%d", 
+                    tempBook.bookCode, tempBook.bookName, tempBook.bookType, 
+                    &tempBook.price, tempBook.createdTime, tempBook.recordType, &tempBook.isDeleted);
+
+            if (strcmp(tempBook.bookCode, selectedBookCode) == 0 && strcmp(tempBook.recordType, "buku") == 0 && tempBook.isDeleted == 0)
+            {
+                found = 1;
+                *book = tempBook;
+            }
+            // fprintf(tempFile, "%s", line); // untuk menulis ke file
+        }
+        fclose(file);
+        fclose(tempFile);
+
+        if (!found)
+        {
+            setConsoleFontColor(160);
+            fprintf(stderr, "Kode buku tidak ditemukan. Silakan coba lagi.\n");
+            resetConsoleFontColor();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // Meminta nama pembeli
+    printf("Masukkan nama pembeli: ");
+    fgets(book->additionalData.dataPenjualan.buyer, sizeof(book->additionalData.dataPenjualan.buyer), stdin);
+    removeTrailingNewLine(book->additionalData.dataPenjualan.buyer);
+
+    strcpy(book->recordType, "penjualan");
+    createdTime(book, "penjualan");
+    book->isDeleted = 0;
+
+    // Menulis data ke file
+    file = fopen(filename, "a");
+    if (file == NULL)
+    {
+        fprintf(stderr, "Error opening file.\n");
+        return 1;
+    }
+    fprintf(file, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", 
+            book->bookCode, book->bookName, book->bookType, book->price, book->createdTime, book->recordType, book->additionalData.dataPenjualan.buyer, book->additionalData.dataPenjualan.saleDate, book->isDeleted);
+    fclose(file);
+
+    return 0;
 }
 
 int main()
@@ -328,7 +421,7 @@ int main()
         printf("Choose an option: ");
         if (scanf("%d", &choice) != 1)
         {
-            fprintf(stderr, "Invalid input.\n");
+            fprintf(stderr, "Invalid input. Please input numeric value\n");
             return 1;
         }
 
@@ -359,6 +452,12 @@ int main()
         case 5:
             break;
         case 6:
+            if (insertSaleBook(fileName, &book) == 0)
+            {
+                setConsoleFontColor(106);
+                printf(" ------ Data Penjualan Buku inserted successfully. ------ \n");
+                resetConsoleFontColor();
+            }
             break;
         case 7:
             exit(0);
