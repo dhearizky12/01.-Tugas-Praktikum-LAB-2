@@ -15,6 +15,7 @@
 #define MAX_RECORD_TYPE 10
 #define MAX_BUYER 20
 #define MAX_SALE_DATE 20
+#define TEMPORARY_FILE_NAME "./tempdatabuku.txt"
 
 typedef struct
 {
@@ -246,6 +247,7 @@ void displayData(const char *filename, const char *desiredRecordType)
     }
 
     //membaca dan memproses setiap baris data
+    int index = 1;
     while (fgets(line, sizeof(line), file)) 
     {
         char *bookCode = strtok(line, ","); //strtok untuk memisahkan string berdasarkan delimiter. parameter line bertujuan untuk memisahkan string line berdasarkan delimiter ","
@@ -264,8 +266,9 @@ void displayData(const char *filename, const char *desiredRecordType)
         //strcmp untuk membandingkan dua string
         if ( isDeletedInt == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("penjualan", desiredRecordType) == 0 )
         {
-            printf("%-20s %-35s %-13s %-11s %-20s %-10s %-20s %-20s\n", bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
+            printf("[%d] %-20s %-35s %-13s %-11s %-20s %-10s %-20s %-20s\n", index, bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
             isEmpty = 0;
+            index++;
         }
         else if ( isDeleted == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("buku", desiredRecordType) == 0)
         {
@@ -359,9 +362,91 @@ int insertSaleBook(const char *filename, Book *book)
     return 0;
 }
 
+int deleteDataPenjualan(const char *filename, int deletedIndex) {
+    FILE *file;
+    FILE *tempFile;
+    while (1)
+    {
+        file = fopen(filename, "r");
+        if (file == NULL)
+        {
+            fprintf(stderr, "Error opening file.\n");
+            return 1;
+        }
+
+        int found = 0;
+        Book tempBook;
+
+        char line[BUFFER];
+        fgets(line, sizeof(line), file); // Copy header to temp
+
+        int indexPenjualan = 0;
+        char buyer[BUFFER];
+        char saleDate[BUFFER];
+
+        tempFile = fopen(TEMPORARY_FILE_NAME, "w"); // mempersiapkan file temporary untuk menyimpan data terupdate setelah di delete
+        if (tempFile == NULL)
+        {
+            fprintf(stderr, "Error opening tempFile.\n");
+            return 1;
+        }
+        fprintf(tempFile, "bookCode,bookName,bookType,bookPrice,createdTime,recordType,buyer,saleDate,isDeleted\n"); // mempersiapkan header file di temporary file
+        while (fgets(line, sizeof(line), file))
+        {
+            sscanf(line, "%[^,],%[^,],%[^,],%u,%[^,],%[^,],%[^,],%[^,],%d", 
+                    tempBook.bookCode, tempBook.bookName, tempBook.bookType, 
+                    &tempBook.price, tempBook.createdTime, tempBook.recordType, buyer, saleDate, &tempBook.isDeleted);
+            if (strcmp(tempBook.recordType, "penjualan") == 0 && tempBook.isDeleted == 0) { // memastikan hanya melakukan looping terhadap record penjualan dan belum pernah di delete
+                indexPenjualan++;
+                if (indexPenjualan == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
+                    found = 1;
+                    fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, buyer, saleDate, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
+                    continue;
+                }
+            }
+
+            fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", 
+            tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, buyer, saleDate, tempBook.isDeleted); // menyimpan data tanpa perubahan
+        }
+        fclose(file);
+        fclose(tempFile);
+        /*
+            Setelah membuat file temporary berisi data yg sudah diupdate dengan isDeleted menjadi 1, kita akan melakukan overwrite kepada file utama sehingga data akan selalu terupdate.
+        */
+        remove(filename); // Delete file data buku
+        rename(TEMPORARY_FILE_NAME, filename); // Ubah nama file temporary menjadi databuku
+
+        if (!found)
+        {
+            setConsoleFontColor(160);
+            fprintf(stderr, "Indeks tidak ditemukan. Silakan coba lagi.\n");
+            resetConsoleFontColor();
+            return 1;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return 0;
+}
+
+void deleteDataPenjualanMenu(const char *filename) {
+    displayData(filename, "penjualan");
+
+    printf("\n=========================================================\n");
+    printf("Silahkan input indeks yg ingin di delete: ");
+    int deletedIndex;
+    scanf("%d", &deletedIndex);
+    int resultDelete = deleteDataPenjualan(filename, deletedIndex);
+    if (resultDelete == 0) {
+        printf("Data Penjualan indeks ke %d berhasil dihapus", deletedIndex);
+    }
+}
+
 int main()
 {
-    const char *fileName = "../databuku.txt";
+    const char *fileName = "./databuku.txt";
     createTXTIfNotExists(fileName);
     int choice;
     Book book;
@@ -438,6 +523,7 @@ int main()
             displayData(fileName, "buku");
             break;
         case 4:
+            deleteDataPenjualanMenu(fileName);
             break;
         case 5:
             break;
