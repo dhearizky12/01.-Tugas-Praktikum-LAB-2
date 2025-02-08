@@ -404,7 +404,7 @@ int deleteData(const char *filename, int deletedIndex, const char *desiredRecord
                 indexPenjualan++;
                 if (indexPenjualan == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
                     found = 1;
-                    fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
+                    // fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
                     continue;
                 }
             }
@@ -412,12 +412,13 @@ int deleteData(const char *filename, int deletedIndex, const char *desiredRecord
                 indexBuku++;
                 if (indexBuku == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
                     found = 1;
-                    fprintf(tempFile, "%s,%s,%s,%u,%s,%s,,,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
+                    // fprintf(tempFile, "%s,%s,%s,%u,%s,%s,,,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
                     continue;
                 }
             }
+            // fprintf(file, "%s,%s,%s,%d,%s,%s,,,%d\n", book->bookCode, book->bookName, book->bookType, book->price, book->createdTime, book->recordType, book->isDeleted);
 
-            if (strlen(tempBook.additionalData.dataPenjualan.buyer) == 0 && strlen(tempBook.additionalData.dataPenjualan.saleDate) == 0) 
+            if (strcmp( tempBook.recordType, "buku" ) == 0) 
             {
                 fprintf(tempFile, "%s,%s,%s,%u,%s,%s,,,%d\n", 
                     tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.isDeleted);
