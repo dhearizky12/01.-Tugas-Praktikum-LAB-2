@@ -446,7 +446,7 @@ void deleteDataPenjualanMenu(const char *filename) {
 
 int main()
 {
-    const char *fileName = "./databuku.txt";
+    const char *fileName = "../databuku.txt";
     createTXTIfNotExists(fileName);
     int choice;
     Book book;
@@ -615,7 +615,8 @@ void menu() {
  }
     }
 }
-int main() {
+int main() 
+{
     loadBuku();
     menu();
     return 0;
