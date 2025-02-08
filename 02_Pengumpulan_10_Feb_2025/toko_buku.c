@@ -386,8 +386,7 @@ int deleteData(const char *filename, int deletedIndex, const char *desiredRecord
         fgets(line, sizeof(line), file); // Copy header to temp
 
         int indexPenjualan = 0;
-        char buyer[BUFFER];
-        char saleDate[BUFFER];
+        int indexBuku = 0;
 
         tempFile = fopen(TEMPORARY_FILE_NAME, "w"); // mempersiapkan file temporary untuk menyimpan data terupdate setelah di delete
         if (tempFile == NULL)
@@ -400,18 +399,35 @@ int deleteData(const char *filename, int deletedIndex, const char *desiredRecord
         {
             sscanf(line, "%[^,],%[^,],%[^,],%u,%[^,],%[^,],%[^,],%[^,],%d", 
                     tempBook.bookCode, tempBook.bookName, tempBook.bookType, 
-                    &tempBook.price, tempBook.createdTime, tempBook.recordType, buyer, saleDate, &tempBook.isDeleted);
-            if (strcmp(tempBook.recordType, "penjualan") == 0 && tempBook.isDeleted == 0) { // memastikan hanya melakukan looping terhadap record penjualan dan belum pernah di delete
+                    &tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, &tempBook.isDeleted);
+            if (strcmp(desiredRecordType, "penjualan") == 0 && tempBook.isDeleted == 0 && strcmp( tempBook.recordType, desiredRecordType ) == 0) { // memastikan hanya melakukan looping terhadap record penjualan dan belum pernah di delete
                 indexPenjualan++;
                 if (indexPenjualan == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
                     found = 1;
-                    fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, buyer, saleDate, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
+                    fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
+                    continue;
+                }
+            }
+            else if (strcmp(desiredRecordType, "buku") == 0 && tempBook.isDeleted == 0 && strcmp( tempBook.recordType, desiredRecordType ) == 0) { // memastikan hanya melakukan looping terhadap record penjualan dan belum pernah di delete
+                indexBuku++;
+                if (indexBuku == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
+                    found = 1;
+                    fprintf(tempFile, "%s,%s,%s,%u,%s,%s,,,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
                     continue;
                 }
             }
 
-            fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", 
-            tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, buyer, saleDate, tempBook.isDeleted); // menyimpan data tanpa perubahan
+            if (strlen(tempBook.additionalData.dataPenjualan.buyer) == 0 && strlen(tempBook.additionalData.dataPenjualan.saleDate) == 0) 
+            {
+                fprintf(tempFile, "%s,%s,%s,%u,%s,%s,,,%d\n", 
+                    tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.isDeleted);
+
+            }
+            else
+            {
+                fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", 
+                    tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, strlen(tempBook.additionalData.dataPenjualan.buyer) > 0 ? tempBook.additionalData.dataPenjualan.buyer : "", strlen(tempBook.additionalData.dataPenjualan.saleDate) > 0 ? tempBook.additionalData.dataPenjualan.saleDate : "", tempBook.isDeleted);
+            }
         }
         fclose(file);
         fclose(tempFile);
@@ -460,16 +476,16 @@ int main()
     Book book;
 
     setConsoleFontColor(106); 
-    printf("\n=========================================================\n");
-    printf("******** Welcome to the BINUS Group 4 Book store ********\n");
-    printf("=========================================================\n");
+    printf("\n===============================================================================\n");
+    printf("******************* Welcome to the BINUS Group 4 Book store *******************\n");
+    printf("===============================================================================\n");
     resetConsoleFontColor();
 
     while (1)
     {
-        printf("\n=========================================================\n");
-        printf("           ******** Please Select MENU ********      \n");
-        printf("=========================================================\n");
+        printf("\n===============================================================================\n");
+        printf("****************************** Please Select MENU *****************************\n");
+        printf("===============================================================================\n");
         printf("1. Insert Book Data.");
         setConsoleFontColor(154);
         printf("Pada menu ini, user dapat menginput data buku\n");
@@ -487,7 +503,7 @@ int main()
         
         printf("4. Delete History Penjualan.");
         setConsoleFontColor(154);
-        printf("Pada menu ini akan di tampilkan history penjualan dan user bisa memilih untuk mendelete\n");
+        printf("Pada menu ini user dapat mendelete data penjualan\n");
         resetConsoleFontColor();
 
         printf("5. Delete Book.");
