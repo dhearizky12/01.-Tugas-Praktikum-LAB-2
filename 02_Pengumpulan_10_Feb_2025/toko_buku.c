@@ -278,6 +278,7 @@ void displayData(const char *filename, const char *desiredRecordType)
         {
             printf("%-7d %-20s %-35s %-13s %-11s %-20s %-11s\n",index, bookCode, bookName, bookType, bookPrice, createdTime, recordType );
             isEmpty = 0;
+            index++;
         }
     }
 
@@ -366,7 +367,7 @@ int insertSaleBook(const char *filename, Book *book)
     return 0;
 }
 
-int deleteDataPenjualan(const char *filename, int deletedIndex) {
+int deleteData(const char *filename, int deletedIndex, const char *desiredRecordType) {
     FILE *file;
     FILE *tempFile;
     while (1)
@@ -435,14 +436,15 @@ int deleteDataPenjualan(const char *filename, int deletedIndex) {
     return 0;
 }
 
-void deleteDataPenjualanMenu(const char *filename) {
-    displayData(filename, "penjualan");
+void deleteDataMenu(const char *filename, const char *desiredRecordType) 
+{
+    displayData(filename, desiredRecordType);
 
     printf("\n=========================================================\n");
     printf("Silahkan input indeks yg ingin di delete: ");
     int deletedIndex;
     scanf("%d", &deletedIndex);
-    int resultDelete = deleteDataPenjualan(filename, deletedIndex);
+    int resultDelete = deleteData(filename, deletedIndex, desiredRecordType);
     if (resultDelete == 0) {
         setConsoleFontColor(177);
         printf("Data Penjualan indeks ke %d berhasil dihapus", deletedIndex);
@@ -529,9 +531,10 @@ int main()
             displayData(fileName, "buku");
             break;
         case 4:
-            deleteDataPenjualanMenu(fileName);
+            deleteDataMenu(fileName, "penjualan");
             break;
         case 5:
+            deleteDataMenu(fileName, "buku");
             break;
         case 6:
             if (insertSaleBook(fileName, &book) == 0)
@@ -551,79 +554,3 @@ int main()
     }
     return 0;
 }
-
-// void deleteDataBukuMenu(const char *filename) {
-//     displayData(filename, "buku");
-
-//     printf("\n=========================================================\n");
-//     printf("Silahkan input indeks yg ingin di delete: ");
-//     int deletedIndex;
-//     scanf("%d", &deletedIndex);
-//     int resultDelete = deleteDataBuku(filename, deletedIndex);
-//     if (resultDelete == 0) {
-//         printf("Data Buku indeks ke %d berhasil dihapus", deletedIndex);
-//     }
-// void deleteBuku() {
-//     viewBuku();
-//     if (jumlahBuku == 0) return;
-    
-//     int index;
-//     printf("Masukkan index buku yang ingin dihapus: ");
-//     scanf("%d", &index);
-    
-//     if (index < 1 || index > jumlahBuku) {
-//         printf("Index tidak valid!\n");
-//         return;
-//     }
-    
-//     for (int i = index - 1; i < jumlahBuku - 1; i++) {
-//         daftarBuku[i] = daftarBuku[i + 1];
-//     }
-//     jumlahBuku--;
-//     saveBuku();
-//     printf("Data Successfully deleted..\n");
-// }
-
-// void menu() {
-//     int pilihan;
-//     while (1) {
-//         printf("\nMenu:\n");
-//         printf("1. Input\n");
-//         printf("2. View History\n");
-//         printf("3. View Buku\n");
-//         printf("4. Delete History\n");
-//         printf("5. Delete Buku\n");
-//         printf("6. Exit\n");
-//         printf("Pilihan: ");
-//         scanf("%d", &pilihan);
-        
-//         switch (pilihan) {
-//             case 1:
-//                 printf("Fitur Input belum diimplementasikan.\n");
-//                 break;
-//             case 2:
-//                 printf("Fitur View History belum diimplementasikan.\n");
-//                 break;
-//             case 3:
-//                 viewBuku();
-//                 break;
-//             case 4:
-//                 printf("Fitur Delete History belum diimplementasikan.\n");
-//                 break;
-//             case 5:
-//                 deleteBuku();
-//                 break;
-//             case 6:
-//                 printf("Keluar dari program.\n");
-//                 return;
-//             default:
-//                 printf("Pilihan tidak valid!\n");
-//  }
-//     }
-// }
-// int main() 
-// {
-//     loadBuku();
-//     menu();
-//     return 0;
-// }
