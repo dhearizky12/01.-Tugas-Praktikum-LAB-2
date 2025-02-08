@@ -1,3 +1,18 @@
+/*
+    KELOMPOK 4 - PROYEK PRAKTIKUM
+    DHEA FIKY FATCHATUR RIZKY ( 2802621393 ) 
+    HERMAWAN ( 2802622111 ) 
+    IAN WINANTO ( 2802612741 ) 
+    NICHOLAS CHANDRA ( 2802617061 ) 
+    DADAN HAMDANI ( 2802621405 ) 
+
+    Link Git : https://github.com/dhearizky12/01.-Tugas-Praktikum-LAB-2
+    Link Demo Program :
+    Link Penjelasan Code
+
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,7 +21,7 @@
 #define MAXC 50
 #define TYPE 10
 #define CREATED_TIME 20
-#define BUFFER 256
+#define INITIAL_BUFFER_SIZE 256
 
 #define MAX_BOOK_CODE 20
 #define MAX_BOOK_NAME 32
@@ -34,6 +49,29 @@ typedef struct
     int isDeleted; //flag untuk menandai apakah entri terhapus
 } Book;
 
+char *allocateBuffer(size_t size) 
+{
+    char *buffer = (char *)malloc(size);
+    if (buffer == NULL) 
+    {
+        fprintf(stderr, "Error: Failed to allocate memory.\n");
+        exit(EXIT_FAILURE);
+    }
+    return buffer;
+}
+
+char *reallocateBuffer(char *buffer, size_t newSize) 
+{
+    char *newBuffer = (char *)realloc(buffer, newSize);
+    if (newBuffer == NULL) 
+    {
+        fprintf(stderr, "Error: Failed to reallocate memory.\n");
+        free(buffer);
+        exit(EXIT_FAILURE);
+    }
+    return newBuffer;
+}
+
 void createTXTIfNotExists(const char *filename)
 {
     // Youtube, https://www.youtube.com/watch?v=QS7AiCN3KjQ, 19/01
@@ -41,14 +79,11 @@ void createTXTIfNotExists(const char *filename)
     if (file == NULL)
     {
         /*
-            -> fopen is part of the C standard library, and it is used to open a file.
-            -> fopen is a way for allocated memory for file.
+            -> fopen is part of the C standard library, and it is used to open a file and a way for allocated memory for file.
             why we need to allocate memory for file?
-            -> because we need to store the file that we open. And store the file in the memory.
-            -> if the file didn't open, it will return NULL.
+            -> because we need to store the file that we open. And store the file in the memory. if the file didn't open, it will return NULL.
             why we dont user malloc and free for file?
-            -> because fopen is a standard library, and it will automatically allocate and deallocate the memory.
-            -> and its more efficient to use fopen and fclose instead of malloc and free.
+            -> because fopen is a standard library, and it will automatically allocate and deallocate the memory and its more efficient to use fopen and fclose instead of malloc and free.
             chatgpt, 19/01
         */
         file = fopen(filename, "w");
@@ -123,49 +158,63 @@ int insertBook(const char *filename, Book *book)
         return 1;
     }
 
-    printf("Insert book name (max %d characters) : ", MAX_BOOK_NAME);
-    fflush(stdin); // untuk membersihkan buffer input
-    // GFG, https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/, 19/01
-    // TAKING SPACE BETWEEN NAME AS INPUT using fgets
-    if (fgets(book->bookName, sizeof(book->bookName), stdin) == NULL)
+    // Alokasi buffer dinamis untuk nama buku
+    char *bookName = allocateBuffer(INITIAL_BUFFER_SIZE);
+    size_t bookNameSize = INITIAL_BUFFER_SIZE;
+
+    printf("Insert book name (max %d characters): ", MAX_BOOK_NAME);
+    if (fgets(bookName, bookNameSize, stdin) == NULL) 
     {
         fprintf(stderr, "Error reading book name.\n");
+        free(bookName);
         return 1;
     }
+    removeTrailingNewLine(bookName);
 
-    removeTrailingNewLine(book->bookName);
-
-    printf("Insert book type (max %d characters): ", MAX_BOOK_TYPE );
-    fflush(stdin);
-    if (fgets(book->bookType, sizeof(book->bookType), stdin) == NULL)
+    // Realokasi jika input melebihi buffer awal
+    while (strlen(bookName) >= bookNameSize - 1) 
     {
+        bookNameSize *= 2;
+        bookName = reallocateBuffer(bookName, bookNameSize);
+    }
+    strncpy(book->bookName, bookName, MAX_BOOK_NAME);
+    free(bookName); // Bebaskan memori setelah digunakan
+
+    // Alokasi buffer dinamis untuk jenis buku
+    char *bookType = allocateBuffer(INITIAL_BUFFER_SIZE);
+    size_t bookTypeSize = INITIAL_BUFFER_SIZE;
+
+    printf("Insert book type (max %d characters): ", MAX_BOOK_TYPE);
+    if (fgets(bookType, bookTypeSize, stdin) == NULL) {
         fprintf(stderr, "Error reading book type.\n");
+        free(bookType);
         return 1;
     }
+    removeTrailingNewLine(bookType);
 
-    // Remove trailing newline from book type
-    removeTrailingNewLine(book->bookType);
+    // Realokasi jika input melebihi buffer awal
+    while (strlen(bookType) >= bookTypeSize - 1) 
+    {
+        bookTypeSize *= 2;
+        bookType = reallocateBuffer(bookType, bookTypeSize);
+    }
+    strncpy(book->bookType, bookType, MAX_BOOK_TYPE);
+    free(bookType); // Bebaskan memori setelah digunakan
 
-    char priceInput[MAXC];
+    char *priceInput = allocateBuffer(INITIAL_BUFFER_SIZE);
+    int price = 0;
 
     while (1)
     {
-        int price = 0;
-        fputs("Insert book price (Please use numeric value in IDR): ", stdout);
-        fflush(stdin);
-
-        if (fgets(priceInput, MAXC, stdin) == NULL)
+        printf("Insert book price (Please use numeric value in IDR): ");
+        if (fgets(priceInput, INITIAL_BUFFER_SIZE, stdin) == NULL)
         {
             puts("(User canceled input)");
+            free(priceInput);
             return -1; // Handle manual EOF or input error
         }
 
-        // Remove trailing newline
-        size_t len = strlen(priceInput);
-        if (len > 0 && priceInput[len - 1] == '\n')
-        {
-            priceInput[len - 1] = '\0';
-        }
+        removeTrailingNewLine(priceInput);
 
         // Convert input to an integer and validate
         char *end;
@@ -173,12 +222,12 @@ int insertBook(const char *filename, Book *book)
 
         if (*end != '\0' || priceInput == end)
         {
-            fputs("\nPlease enter a valid price.\n", stderr);
+            fprintf(stderr, "Please enter a valid price.\n");
             // stderr argument is used to display the error message on the screen because it can procesing dynamic value
         }
         else if (price <= 0)
         {
-            printf("Price should above 0\n");
+            printf("Price should be above 0\n");
         }
         else
         {
@@ -186,6 +235,7 @@ int insertBook(const char *filename, Book *book)
             break;
         }
     }
+    free(priceInput); // Bebaskan memori setelah digunakan
 
     //set record type to "buku"
     strcpy(book->recordType, "buku"); //strcpy untuk mengcopy string "buku" ke dalam recordType
@@ -230,7 +280,7 @@ void displayData(const char *filename, const char *desiredRecordType)
         return;
     }
 
-    char line[BUFFER];
+    char line[ INITIAL_BUFFER_SIZE];
     int isEmpty = 1;
 
     // Read and display the header
@@ -315,7 +365,7 @@ int insertSaleBook(const char *filename, Book *book)
         int found = 0;
         Book tempBook;
 
-        char line[BUFFER];
+        char line[ INITIAL_BUFFER_SIZE];
         fgets(line, sizeof(line), file); // Copy header to temp
 
         while (fgets(line, sizeof(line), file))
@@ -382,7 +432,7 @@ int deleteData(const char *filename, int deletedIndex, const char *desiredRecord
         int found = 0;
         Book tempBook;
 
-        char line[BUFFER];
+        char line[ INITIAL_BUFFER_SIZE];
         fgets(line, sizeof(line), file); // Copy header to temp
 
         int indexPenjualan = 0;
