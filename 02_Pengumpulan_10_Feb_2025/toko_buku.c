@@ -32,6 +32,14 @@
 #define MAX_SALE_DATE 20
 #define TEMPORARY_FILE_NAME "./tempdatabuku.txt"
 
+#ifdef _WIN32
+    #define FILE_PATH "../databuku.txt"  // Windows
+    #define CLEAR_SCREEN "cls"
+#else
+    #define FILE_PATH "./databuku.txt"  // macOS/Linux
+    #define CLEAR_SCREEN "clear"
+#endif
+
 typedef struct
 {
     char bookCode[MAX_BOOK_CODE]; // AUTO GENERATED SINCE IT IS A UNIQUE
@@ -521,7 +529,7 @@ void deleteDataMenu(const char *filename, const char *desiredRecordType)
 
 int main()
 {
-    const char *fileName = "../databuku.txt";
+    const char *fileName = FILE_PATH;
     createTXTIfNotExists(fileName);
     int choice;
     Book book;
