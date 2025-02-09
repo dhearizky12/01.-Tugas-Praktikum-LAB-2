@@ -15,3 +15,4 @@ bookCode,bookName,bookType,bookPrice,createdTime,recordType,buyer,saleDate,isDel
 20250209_060906,ayat ayat cinta,romance,345000,2025-02-09 06:09:06,buku,,,0
 20250209_060906,ayat ayat cinta,romance,345000,2025-02-09 06:09:06,penjualan,deva anggara,2025-02-09 06:10:02,0
 20250209_061711,Integral,education,376000,2025-02-09 06:17:11,buku,,,0
+20250209_070046,deteftif conan,komik,25000,2025-02-09 07:00:46,buku,,,0

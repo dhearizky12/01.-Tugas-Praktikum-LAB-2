@@ -75,7 +75,7 @@ char *reallocateBuffer(char *buffer, size_t newSize)
 void createTXTIfNotExists(const char *filename)
 {
     // Youtube, https://www.youtube.com/watch?v=QS7AiCN3KjQ, 19/01
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(filename, "rb+"); // Coba buka file dengan mode baca/tulis
     if (file == NULL)
     {
         /*
@@ -86,10 +86,10 @@ void createTXTIfNotExists(const char *filename)
             -> because fopen is a standard library, and it will automatically allocate and deallocate the memory and its more efficient to use fopen and fclose instead of malloc and free.
             chatgpt, 19/01
         */
-        file = fopen(filename, "w");
+        file = fopen(filename, "w"); // Jika tidak ada, buat file baru
         if (file == NULL)
         {
-            fprintf(stderr, "Error creating file.\n");
+            fprintf(stderr, "Error creating file: %s\n", filename);
             exit(1);
         }
         //menulis header untuk file.
