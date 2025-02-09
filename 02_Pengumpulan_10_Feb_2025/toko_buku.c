@@ -309,7 +309,8 @@ void displayData(const char *filename, const char *desiredRecordType)
     }
 
     //membaca dan memproses setiap baris data
-    int index = 1;
+    int indexPenjualan = 1;
+    int indexBuku = 1;
     while (fgets(line, sizeof(line), file)) 
     {
         char *bookCode = strtok(line, ","); //strtok untuk memisahkan string berdasarkan delimiter. parameter line bertujuan untuk memisahkan string line berdasarkan delimiter ","
@@ -328,15 +329,15 @@ void displayData(const char *filename, const char *desiredRecordType)
         //strcmp untuk membandingkan dua string
         if ( isDeletedInt == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("penjualan", desiredRecordType) == 0 )
         {
-            printf("%-7d %-20s %-35s %-13s %-11s %-20s %-11s %-20s %-20s\n", index, bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
+            printf("%-7d %-20s %-35s %-13s %-11s %-20s %-11s %-20s %-20s\n", indexPenjualan, bookCode, bookName, bookType, bookPrice, createdTime, recordType, buyer, saleDate);
             isEmpty = 0;
-            index++;
+            indexPenjualan++;
         }
         else if ( isDeleted == 0 && strcmp(recordType, desiredRecordType) == 0 && strcmp("buku", desiredRecordType) == 0)
         {
-            printf("%-7d %-20s %-35s %-13s %-11s %-20s %-11s\n",index, bookCode, bookName, bookType, bookPrice, createdTime, recordType );
+            printf("%-7d %-20s %-35s %-13s %-11s %-20s %-11s\n",indexBuku, bookCode, bookName, bookType, bookPrice, createdTime, recordType );
             isEmpty = 0;
-            index++;
+            indexBuku++;
         }
     }
 
@@ -458,23 +459,29 @@ int deleteData(const char *filename, int deletedIndex, const char *desiredRecord
             sscanf(line, "%[^,],%[^,],%[^,],%u,%[^,],%[^,],%[^,],%[^,],%d", 
                     tempBook.bookCode, tempBook.bookName, tempBook.bookType, 
                     &tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, &tempBook.isDeleted);
-            if (strcmp(desiredRecordType, "penjualan") == 0 && tempBook.isDeleted == 0 && strcmp( tempBook.recordType, desiredRecordType ) == 0) { // memastikan hanya melakukan looping terhadap record penjualan dan belum pernah di delete
+             // Debugging: Print indeks dan recordType yang dibaca
+            printf("Checking index: %d, deletedIndex: %d, recordType: %s\n", indexBuku, deletedIndex, tempBook.recordType);
+
+            //TODO : BUG FOR DELETE
+            if (strcmp(desiredRecordType, "buku") == 0 && tempBook.isDeleted == 0 && strcmp(tempBook.recordType, "buku") == 0) 
+            {
+                indexBuku++;  
+
+                if (indexBuku == deletedIndex) { 
+                    found = 1;
+                    tempBook.isDeleted = 1;  // Perbaikan: Update isDeleted menjadi 1
+                }
+            }
+
+            if (strcmp(desiredRecordType, "penjualan") == 0 && tempBook.isDeleted == 0 && strcmp(tempBook.recordType, "penjualan") == 0) 
+            {
                 indexPenjualan++;
-                if (indexPenjualan == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
+
+                if (indexPenjualan == deletedIndex) { 
                     found = 1;
-                    // fprintf(tempFile, "%s,%s,%s,%u,%s,%s,%s,%s,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
-                    continue;
+                    tempBook.isDeleted = 1;  // Perbaikan: Update isDeleted menjadi 1
                 }
             }
-            else if (strcmp(desiredRecordType, "buku") == 0 && tempBook.isDeleted == 0 && strcmp( tempBook.recordType, desiredRecordType ) == 0) { // memastikan hanya melakukan looping terhadap record penjualan dan belum pernah di delete
-                indexBuku++;
-                if (indexBuku == deletedIndex) { // melakukan pengecekan apakah index yg ingin di delete sudah sesuai
-                    found = 1;
-                    // fprintf(tempFile, "%s,%s,%s,%u,%s,%s,,,%d\n", tempBook.bookCode, tempBook.bookName, tempBook.bookType, tempBook.price, tempBook.createdTime, tempBook.recordType, 1); // menyimpan baris yg akan didelete dengan isDeleted 1
-                    continue;
-                }
-            }
-            // fprintf(file, "%s,%s,%s,%d,%s,%s,,,%d\n", book->bookCode, book->bookName, book->bookType, book->price, book->createdTime, book->recordType, book->isDeleted);
 
             if (strcmp( tempBook.recordType, "buku" ) == 0) 
             {
