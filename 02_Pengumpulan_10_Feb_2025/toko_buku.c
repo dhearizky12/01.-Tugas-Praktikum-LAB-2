@@ -84,7 +84,7 @@ char *reallocateBuffer(char *buffer, size_t newSize)
 void createTXTIfNotExists(const char *filename)
 {
     // Youtube, https://www.youtube.com/watch?v=QS7AiCN3KjQ, 19/01
-    FILE *file = fopen(filename, "rb+"); // Coba buka file dengan mode baca/tulis
+    FILE *file = fopen(filename, "r"); // Coba buka file dengan mode baca/tulis
     if (file == NULL)
     {
         /*
@@ -384,9 +384,9 @@ int insertSaleBook(const char *filename, Book *book)
 
         while (fgets(line, sizeof(line), file))
         {
-            sscanf(line, "%[^,],%[^,],%[^,],%u,%[^,],%[^,],,,%d",
+            sscanf(line, "%[^,],%[^,],%[^,],%u,%[^,],%[^,],%[^,],%[^,],%d",
                    tempBook.bookCode, tempBook.bookName, tempBook.bookType,
-                   &tempBook.price, tempBook.createdTime, tempBook.recordType, &tempBook.isDeleted);
+                   &tempBook.price, tempBook.createdTime, tempBook.recordType,tempBook.additionalData.dataPenjualan.buyer, tempBook.additionalData.dataPenjualan.saleDate, &tempBook.isDeleted);
 
             if (strcmp(tempBook.bookCode, selectedBookCode) == 0 && strcmp(tempBook.recordType, "buku") == 0 && tempBook.isDeleted == 0)
             {
