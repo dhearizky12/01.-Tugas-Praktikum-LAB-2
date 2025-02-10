@@ -7,8 +7,8 @@
     DADAN HAMDANI ( 2802621405 )
 
     Link Git : https://github.com/dhearizky12/01.-Tugas-Praktikum-LAB-2
-    Link Demo Program :
-    Link Penjelasan Code
+    Link Demo Program : Ada di PDF
+    Link Penjelasan Code : Ada di PDF
 
 */
 
